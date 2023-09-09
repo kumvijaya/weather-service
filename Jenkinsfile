@@ -1,16 +1,13 @@
 node {
    echo 'Docker CI Pipeline Started'
-   withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_USER', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_TOKEN')]) {
-        String serviceName = 'weather-service'
-        String imageName = DOCKERHUB_USERNAME + '/' + serviceName
-        String imageName = DOCKERHUB_USERNAME + '/' + serviceName
-        String tagVerison = 'v1'
+   withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_USER', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
         stage('checkout') {
             checkout scm
         }
         stage('docker login') {
-            powershell getLogInCmd()
+            powershell getLogInCmd(DOCKERHUB_USERNAME, DOCKERHUB_PASSWORD)
         }
+        String imageName = DOCKERHUB_USERNAME + '/' + 'weather-service'
         stage('docker build') {
             powershell getBuildCmd('Dockerfile', imageName, ['v1', 'latest'])
         }
@@ -24,18 +21,18 @@ node {
     }
 }
 
-String getLogInCmd() {
+String getLogInCmd(username, password) {
     def cmd = 'docker login'
-    cmd <<= ' --username ' + DOCKERHUB_USERNAME
-    cmd <<= ' --password ' + DOCKERHUB_TOKEN
+    cmd <<= ' --username ' + username
+    cmd <<= ' --password ' + password
     return cmd.toString()
 }
 
-String getBuildCmd(dockerFile, imageName, tagVersions) {
+String getBuildCmd(dockerFile, imageName, tags) {
     def cmd = 'docker build'
     cmd <<= ' -f ' + dockerFile
-    for (tagVersion in tagVersions) {
-        cmd <<= ' -t ' + imageName + ':' + tagVerison
+    for (tag in tags) {
+        cmd <<= ' -t ' + imageName + ':' + tag
     }
     cmd <<= ' .'
     return cmd.toString()
