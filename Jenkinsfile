@@ -8,7 +8,7 @@ node {
             checkout scm
         }
         stage('docker login') {
-            powershell "echo ${DOCKERHUB_TOKEN} | docker login --username ${DOCKERHUB_USERNAME} --password-stdin"
+            powershell "docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_TOKEN}"
         }
         stage('docker build') {
             powershell "docker build -f Dockerfile -t ${imageName}:${tagVerison} -t ${imageName}:latest ."
