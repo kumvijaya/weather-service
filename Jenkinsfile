@@ -13,7 +13,7 @@ node {
         }
         stage('docker publish') {
             powershell getPushCmd(imageName)
-            powershell getRmCmd(imageName)
+            // powershell getRmCmd(imageName)
         }
     }
 }
@@ -42,6 +42,7 @@ String getPushCmd(imageName) {
     return cmd.toString()
 }
 
-String getRmCmd(imageName) {
-    return 'docker rmi $(docker images --format' + "\"{{.Repository}}:{{.Tag}}\"" + '|findstr ' + imageName + ')'
-}
+// String getRmCmd(imageName) {
+//     def cmd = 'docker images --format' + "\"{{.Repository}}:{{.Tag}}\"" + '|findstr ' + imageName
+//     return 'docker rmi $()'
+// }
