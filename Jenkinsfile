@@ -13,9 +13,7 @@ node {
         }
         stage('docker publish') {
             powershell getPushCmd(imageName)
-            powershell """
-                docker rmi $(docker images --format "{{.Repository}}:{{.Tag}}"|findstr "${imageName}")
-            """
+            powershell getRmCmd(imageName)
         }
     }
 }
@@ -42,4 +40,8 @@ String getPushCmd(imageName) {
     cmd <<= ' ' + imageName
     cmd <<= ' --all-tags'
     return cmd.toString()
+}
+
+String getRmCmd(imageName) {
+    return 'docker rmi $(docker images --format' + "\"{{.Repository}}:{{.Tag}}\"" + '|findstr ' + imageName + ')'
 }
