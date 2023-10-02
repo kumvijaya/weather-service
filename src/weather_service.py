@@ -34,13 +34,13 @@ def get_default_location():
         dict: lat, lang
     """
     loc = {}
-    loc['lattitude'] = 52.52
-    loc['langitude'] = 13.41
+    loc['lattitude'] = 38.8951
+    loc['langitude'] = -77.0364
     return loc
 
 def get_current_weather(location):
     """Gets weather info for given location using api.open-meteo.com
-    For example: uses Ex: https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m
+    For example: uses Ex: https://api.open-meteo.com/v1/forecast?latitude=38.8951&longitude=-77.0364&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m
 
     Args:
 
