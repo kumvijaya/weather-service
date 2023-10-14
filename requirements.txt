@@ -1,3 +1,4 @@
+appmap>=1.1.0.dev0
 flask-restful==0.3.10
 geocoder==1.38.1
 pytest==7.4.2
