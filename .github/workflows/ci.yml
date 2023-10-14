@@ -1,28 +1,38 @@
 name: 'CI'
+
 on:
+  # Run on pull request, so that the PR can be analyzed.
   pull_request:
     paths-ignore: [ '**.md' ]
+  # Run on merge to the base branch, so that the baseline
+  # AppMap archive can be brought up-to-date.
+  # If your base branch is not 'main', (e.g. 'master', 'develop'),
+  # change this accordingly.
   push:
     paths-ignore: [ '**.md' ]
     branches:
       - main
+
+  # Run weekly, so that the baseline AppMap artifact does not expire.
+  schedule:
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 jobs:
-  docker-workflow:
+  py-docker-ci:
     permissions: write-all
     runs-on: ubuntu-latest
     name: Build and Deploy Docker
     continue-on-error: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-          fetch-depth: 0
+        uses: actions/checkout@v4
+        # with:
+        #   # Checkout pull request head so that a commit can be made
+        #   ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
             python-version: 3.11
 
@@ -30,9 +40,34 @@ jobs:
         run: |
             pip install -r requirements.txt
 
+      # Begin install-action snippet
+      #
+      # - name: Install AppMap tools
+      #   id: install-appmap
+      #   uses: getappmap/install-action@v1
+      #   with:
+      #     project-type: pip
+      #     build-patch-file: false
+      # - name: Commit changes
+      #   uses: EndBug/add-and-commit@v9
+      #
+      # End install-action snippet
+
       - name: Run tests
         run: |
             python -m pytest
+
+      # - name: Archive AppMaps
+      #   uses: getappmap/archive-action@v1
+      #   with:
+      #     revision: ${{ github.event.pull_request.base.sha }}
+
+      - name: Save AppMaps
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: ./tmp/appmap
+          key: appmaps-${{ github.sha }}-${{ github.run_attempt }}
 
       - uses: docker-practice/actions-setup-docker@master
         timeout-minutes: 12
@@ -42,5 +77,15 @@ jobs:
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME}} --password-stdin
           docker build -f Dockerfile -t vkumar2/weather-service:v1 .
           docker push ${{ secrets.DOCKERHUB_USERNAME}}/weather-service --all-tags
+
+  appmap-analysis:
+    if: always()
+    needs: [py-docker-ci]
+    uses: getappmap/analyze-action/.github/workflows/appmap-analysis.yml@v1
+    permissions:
+      actions: read
+      contents: read
+      checks: write
+      pull-requests: write
 
 

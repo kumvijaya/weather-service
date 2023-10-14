@@ -150,3 +150,7 @@ dmypy.json
 .pyre/
 *.pyc
 node_modules
+
+
+# AppMap artifacts
+/.appmap
